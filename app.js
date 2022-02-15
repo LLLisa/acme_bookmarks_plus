@@ -4,7 +4,6 @@ const db = new Sequelize('postgres://localhost/bookmarks_plus');
 
 const syncAndSeed = async () => {
   try {
-    await db.sync({ force: true });
     const shopping = await Category.create({ name: 'shopping' });
     const work = await Category.create({ name: 'work' });
     const doomscrolling = await Category.create({ name: 'doomscrolling' });
@@ -52,6 +51,8 @@ app.get('/', (req, res) => {
 
 const init = async () => {
   try {
+    await db.sync({ force: true });
+
     await syncAndSeed();
     console.log('~~~~~synced~~~~~');
     const port = 1337;
