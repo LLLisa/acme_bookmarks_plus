@@ -5,7 +5,6 @@ const db = new Sequelize('postgres://localhost/bookmarks_plus');
 const syncAndSeed = async () => {
   try {
     await db.sync({ force: true });
-
     const shopping = await Category.create({ name: 'shopping' });
     const work = await Category.create({ name: 'work' });
     const doomscrolling = await Category.create({ name: 'doomscrolling' });
@@ -29,16 +28,17 @@ const syncAndSeed = async () => {
 
 //define parent model first
 const Bookmark = db.define('bookmark', {
-  name: { type: Sequelize.STRING, unique: true },
+  name: { type: Sequelize.STRING, unique: true, validate: { notEmpty: true } },
+  //validate: { notEmpty: true }, //enforced byy sequelize
 });
 const Category = db.define('category', {
-  name: Sequelize.STRING,
+  name: { type: Sequelize.STRING, allowNull: false }, //enforced by postgres
 });
 
 Bookmark.belongsTo(Category);
 Category.hasMany(Bookmark);
 
-//server stuff ----------------------
+//server setup ----------------------
 const express = require('express');
 const app = express();
 const methodOverride = require('method-override');
@@ -54,7 +54,7 @@ const init = async () => {
   try {
     await syncAndSeed();
     console.log('~~~~~synced~~~~~');
-    const port = process.env.PORT || 1337;
+    const port = 1337;
     app.listen(port, () => {
       console.log(`glistening on port ${port}`);
     });
@@ -75,7 +75,7 @@ app.get('/bookmarks', async (req, res, next) => {
     const html = await `
     <html>
     <h1>Bookmarks</h1>
-    <a href="/">back</a>
+    <a href="/" style="opacity:0;">home</a>
       <body>
         <ul>
           ${bookmarkList
